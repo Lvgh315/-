@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>短距离激光雷达趋势</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="plotDiv" style="width: 1000px; height: 600px;"></div>
+
+    <script>
+        // 图表数据
+        const years = [2025, 2026, 2027, 2030];
+        const data = [
+            {
+                x: years, y: [0.3, 0.7, 0.7, 0.2],
+                name: '重量 (kg)', type: 'scatter', mode: 'lines+markers',
+                line: { width: 3, color: '#1f77b4' }, yaxis: 'y'
+            },
+            {
+                x: years, y: [10, 12, 12, 8],
+                name: '功耗 (W)', type: 'scatter', mode: 'lines+markers',
+                line: { width: 3, color: '#ff7f0e' }, yaxis: 'y2'
+            },
+            {
+                x: years, y: [250, 200, 150, 85],
+                name: '成本中间值 (美元)', type: 'scatter', mode: 'lines+markers',
+                line: { width: 3, color: '#2ca02c' }, yaxis: 'y3'
+            },
+            {
+                x: years, y: [0.5, 1.15, 1.15, 1.75],
+                name: '点速 (M pts/s)', type: 'scatter', mode: 'lines+markers',
+                line: { width: 3, color: '#d62728' }, yaxis: 'y4'
+            },
+            {
+                x: years, y: [90, 105, 105, 90],
+                name: '垂直FOV (°)', type: 'scatter', mode: 'lines+markers',
+                line: { width: 3, color: '#9467bd' }, yaxis: 'y5'
+            }
+        ];
+
+        // 布局配置
+        const layout = {
+            title: '短距离激光雷达趋势 (2025-2030)',
+            width: 1000, height: 600,
+            margin: { l: 120, r: 200, b: 80, t: 100 },
+            xaxis: { 
+                title: '年份', 
+                tickvals: years,
+                ticktext: years.map(y => y.toString())
+            },
+            yaxis: { 
+                title: '重量 (kg)', 
+                titlefont: { color: '#1f77b4' },
+                tickfont: { color: '#1f77b4' },
+                range: [0, 0.8]
+            },
+            yaxis2: { 
+                title: '功耗 (W)', 
+                titlefont: { color: '#ff7f0e' },
+                tickfont: { color: '#ff7f0e' },
+                anchor: 'free',
+                overlaying: 'y',
+                side: 'right',
+                position: 0.85,
+                range: [7, 13]
+            },
+            yaxis3: { 
+                title: '成本 (美元)', 
+                titlefont: { color: '#2ca02c' },
+                tickfont: { color: '#2ca02c' },
+                anchor: 'free',
+                overlaying: 'y',
+                side: 'right',
+                position: 0.92,
+                range: [50, 300]
+            },
+            yaxis4: { 
+                title: '点速 (M pts/s)', 
+                titlefont: { color: '#d62728' },
+                tickfont: { color: '#d62728' },
+                anchor: 'free',
+                overlaying: 'y',
+                side: 'right',
+                position: 0.99,
+                range: [0, 2]
+            },
+            yaxis5: { 
+                title: '垂直FOV (°)', 
+                titlefont: { color: '#9467bd' },
+                tickfont: { color: '#9467bd' },
+                anchor: 'free',
+                overlaying: 'y',
+                side: 'left',
+                position: 0.05,
+                range: [80, 110]
+            },
+            legend: { 
+                x: 0.5, 
+                y: -0.15, 
+                xanchor: 'center', 
+                orientation: 'h' 
+            },
+            hovermode: 'x unified'
+        };
+
+        // 绘制图表
+        Plotly.newPlot('plotDiv', data, layout);
+    </script>
+</body>
+</html>
