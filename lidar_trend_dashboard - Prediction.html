@@ -3,28 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>激光雷达产品趋势预测图表</title>
+  <title>激光雷达产品趋势图表</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    .controls { margin-bottom: 20px; }
+   .controls { margin-bottom: 20px; }
     .controls select { margin-right: 10px; padding: 5px; }
     #chart { width: 100%; height: 600px; }
   </style>
 </head>
 <body>
-  <h2>激光雷达产品预测趋势图表</h2>
-    <div class="description">
-    <p>本交互仪表盘用于分析激光雷达产品在 <strong>五类探测距离</strong>（短距、中短距、中长距、长距、超长距）与 <strong>六类产品类型</strong>（广角低分辨率、广角中分辨率、广角高分辨率、全景低分辨率、全景中分辨率、全景高分辨率）在 <strong>2025–2030+</strong> 时间区间的演进趋势。</p>
-    <ul>
-      <li>图1：可视化每年每类探测序列的产品类型部署趋势。点大小表示分辨率等级，颜色表示年份（颜色随年份递增）。</li>
-      <li>图2：展示各参数（如尺寸、功耗、FOV等）在不同时间区间与探测序列下的演进趋势折线图。</li>
-      <li>图3：展示不同技术路径在不同探测序列和年份中的部署分布，不同形状表示技术路径。</li>
-      <li>图4：对比任意两类探测序列在各参数上的全局趋势。</li>
-    </ul>
-    <p><strong>图例说明：</strong>图中颜色越深代表年份越晚（2025–2030+），点越大表示产品类型等级越高。</p>
+  <h2>激光雷达产品趋势图表</h2>
+<div class="description">
+  <p>本图标用于分析激光雷达产品在 <strong>五类探测距离</strong>（短距、中短距、中长距、长距、超长距）与 <strong>六类产品类型</strong>（广角低分辨率、广角中分辨率、广角高分辨率、全景低分辨率、全景中分辨率、全景高分辨率）在 <strong>2025–2030+</strong> 时间区间的演进趋势。</p>
+  <ul>
+    <li>可视化每年每类探测序列的产品类型部署趋势。点大小表示分辨率等级，颜色表示年份（颜色随年份递增）。</li>
+    <li>展示各参数（如尺寸、功耗、FOV等）在不同时间区间与探测序列下的演进趋势折线图。</li>
+    <li>展示不同技术路径在不同探测序列和年份中的部署分布，不同形状表示技术路径。</li>
+    <li>对比任意两类探测序列在各参数上的全局趋势。</li>
+  </ul>
   </div>
-  
+
   <div class="controls">
     模式:
     <select id="modeSelect">
@@ -243,29 +242,35 @@ const data = {
       const c2 = document.getElementById('compare2').value;
       let traces = [];
       const seqList = seq === '全部' ? Object.keys(data) : [seq];
-      if (mode === 'deployment') {
-        seqList.forEach(sq => {
-          productTypes.forEach(pt => {
-            const d = data[sq][year]?.[pt];
-            if (d) traces.push({ x:[
-              sq + ' - ' + pt
-            ], y:[d.deploymentRank], marker:{ size:d.deploymentRank*10, color:yearRanges.indexOf(year) }, name:pt, type:'scatter' });
-          });
+      if (mode === 'deployment') {if (mode === 'deployment') {
+  // 定义产品类型对应固定颜色，颜色映射可自定义
+  const colorMap = {
+    "广角低分辨率": "#1f77b4",
+    "广角中分辨率": "#ff7f0e",
+    "广角高分辨率": "#2ca02c",
+    "全景低分辨率": "#d62728",
+    "全景中分辨率": "#9467bd",
+    "全景高分辨率": "#8c564b"
+  }; 
+  seqList.forEach(sq => {
+    productTypes.forEach(pt => {
+      const d = data[sq][year]?.[pt];
+      if (d) {
+        traces.push({
+          x: [sq + ' - ' + pt],
+          y: [d.deploymentRank],
+          marker: {
+            size: d.deploymentRank * 10,
+            color: colorMap[pt] || '#777'  // 用固定颜色，不随年份变化
+          },
+          name: pt,
+          type: 'scatter'
         });
-      } else if (mode === 'parameterTrend') {
-        seqList.forEach(sq => {
-          productTypes.forEach(pt => {
-            if (param==='全部') return;
-            traces.push({ x:yearRanges, y:yearRanges.map(y=>data[sq][y][pt]?.[param]||null), name: sq+'-'+pt, mode:'lines+markers', type:'scatter' });
-          });
-        });
-      } else if (mode === 'techDeployment') {
-        seqList.forEach(sq => {
-          productTypes.forEach(pt => {
-            const d = data[sq][year]?.[pt];
-            if (d && (tech==='全部' || d.tech===tech)) traces.push({ x:[sq+' - '+pt], y:[d.deploymentRank], marker:{ symbol:100+techPaths.indexOf(d.tech), size:12, color:yearRanges.indexOf(year) }, name:pt, type:'scatter' });
-          });
-        });
+      }
+    });
+  });
+}
+
       } else if (mode === 'sequenceCompare') {
         [c1,c2].forEach(sq => {
           if (sq==='全部') return;
