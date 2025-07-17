@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>激光雷达产品趋势可交互仪表盘</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .controls { margin-bottom: 20px; }
+    .controls select { margin-right: 10px; padding: 5px; }
+    #chart { width: 100%; height: 600px; }
+  </style>
+</head>
+<body>
+  <h2>激光雷达产品趋势可交互仪表盘</h2>
+  <div class="controls">
+    模式:
+    <select id="modeSelect">
+      <option value="deployment">产品部署散点图</option>
+      <option value="parameterTrend">参数演进折线图</option>
+      <option value="techDeployment">技术路径部署图</option>
+      <option value="sequenceCompare">序列参数对比</option>
+    </select>
+    年份区间:
+    <select id="yearRangeSelect"></select>
+    产品序列:
+    <select id="sequenceSelect"></select>
+    参数:
+    <select id="parameterSelect"></select>
+    技术路径:
+    <select id="techPathSelect"></select>
+    对比序列1:
+    <select id="compare1"></select>
+    对比序列2:
+    <select id="compare2"></select>
+  </div>
+  <div id="chart"></div>
+  <script>
+const data = {
+    "short": {
+      "2025-2026": {
+        "广角低分辨率": { "deploymentRank":3,"resolution":0.25,"pointDensity":0.5,"FOV":"120x90","power":10,"cost":500,"tech":"Flash" },
+        "广角中分辨率": { "deploymentRank":2,"resolution":0.15,"pointDensity":1.0,"FOV":"120x90","power":12,"cost":400,"tech":"混合架构" },
+        "广角高分辨率": null,
+        "全景低分辨率": { "deploymentRank":1,"resolution":0.3,"pointDensity":0.7,"FOV":"360x90","power":12,"cost":450,"tech":"Flash" },
+        "全景中分辨率": null,
+        "全景高分辨率": null
+      },
+      "2027-2028": {
+        "广角低分辨率": null,
+        "广角中分辨率": { "deploymentRank":3,"resolution":0.1,"pointDensity":1.8,"FOV":"140x90","power":9,"cost":300,"tech":"混合架构" },
+        "广角高分辨率": { "deploymentRank":1,"resolution":0.05,"pointDensity":4.0,"FOV":"130x30","power":15,"cost":350,"tech":"MEMS" },
+        "全景低分辨率": { "deploymentRank":2,"resolution":0.2,"pointDensity":1.0,"FOV":"360x60","power":10,"cost":300,"tech":"Flash" },
+        "全景中分辨率": { "deploymentRank":1,"resolution":0.08,"pointDensity":2.0,"FOV":"360x80","power":10,"cost":300,"tech":"混合架构" },
+        "全景高分辨率": null
+      },
+      "2029-2030": {
+        "广角低分辨率": null,
+        "广角中分辨率": { "deploymentRank":2,"resolution":0.08,"pointDensity":2.8,"FOV":"150x100","power":8,"cost":200,"tech":"Flash" },
+        "广角高分辨率": { "deploymentRank":3,"resolution":0.03,"pointDensity":6.0,"FOV":"150x35","power":10,"cost":300,"tech":"Flash" },
+        "全景低分辨率": null,
+        "全景中分辨率": { "deploymentRank":1,"resolution":0.05,"pointDensity":4.0,"FOV":"360x90","power":8,"cost":200,"tech":"Flash" },
+        "全景高分辨率": { "deploymentRank":1,"resolution":0.02,"pointDensity":8.0,"FOV":"360x90","power":10,"cost":400,"tech":"OPA" }
+      },
+      "2030+": {
+        "广角低分辨率": null,
+        "广角中分辨率": null,
+        "广角高分辨率": { "deploymentRank":2,"resolution":0.02,"pointDensity":8.0,"FOV":"160x40","power":8,"cost":200,"tech":"OPA" },
+        "全景低分辨率": null,
+        "全景中分辨率": { "deploymentRank":1,"resolution":0.03,"pointDensity":6.0,"FOV":"360x90","power":6,"cost":150,"tech":"Flash" },
+        "全景高分辨率": { "deploymentRank":3,"resolution":0.01,"pointDensity":10.0,"FOV":"360x100","power":8,"cost":250,"tech":"OPA" }
+      }
+    },
+    "midshort": {
+      "2025-2026": {
+        "广角低分辨率": { "deploymentRank":2,"resolution":0.3,"pointDensity":0.9,"FOV":"120x25","power":12,"cost":450,"tech":"MEMS" },
+        "广角中分辨率": { "deploymentRank":3,"resolution":0.15,"pointDensity":1.2,"FOV":"120x25","power":12,"cost":400,"tech":"MEMS" },
+        "广角高分辨率": { "deploymentRank":1,"resolution":0.05,"pointDensity":3.0,"FOV":"120x30","power":18,"cost":500,"tech":"MEMS" },
+        "全景低分辨率": { "deploymentRank":2,"resolution":0.2,"pointDensity":1.0,"FOV":"360x59","power":10,"cost":400,"tech":"Flash" },
+        "全景中分辨率": { "deploymentRank":1,"resolution":0.1,"pointDensity":1.5,"FOV":"360x59","power":10,"cost":350,"tech":"混合架构" },
+        "全景高分辨率": null
+      },
+      "2027-2028": {
+        "广角低分辨率": null,
+        "广角中分辨率": { "deploymentRank":3,"resolution":0.1,"pointDensity":2.2,"FOV":"140x30","power":10,"cost":300,"tech":"混合架构" },
+        "广角高分辨率": { "deploymentRank":2,"resolution":0.05,"pointDensity":5.0,"FOV":"130x30","power":15,"cost":450,"tech":"FMCW/4D" },
+        "全景低分辨率": null,
+        "全景中分辨率": { "deploymentRank":1,"resolution":0.08,"pointDensity":2.5,"FOV":"360x70","power":9,"cost":300,"tech":"Flash" },
+        "全景高分辨率": null
+      },
+      "2029-2030": {
+        "广角低分辨率": null,
+        "广角中分辨率": { "deploymentRank":2,"resolution":0.08,"pointDensity":3.0,"FOV":"150x35","power":8,"cost":250,"tech":"Flash" },
+        "广角高分辨率": { "deploymentRank":3,"resolution":0.03,"pointDensity":6.5,"FOV":"140x40","power":12,"cost":400,"tech":"Flash" },
+        "全景低分辨率": null,
+        "全景中分辨率": { "deploymentRank":1,"resolution":0.05,"pointDensity":4.5,"FOV":"360x80","power":8,"cost":200,"tech":"Flash" },
+        "全景高分辨率": null
+      },
+      "2030+": {
+        "广角低分辨率": null,
+        "广角中分辨率": null,
+        "广角高分辨率": { "deploymentRank":2,"resolution":0.02,"pointDensity":7.0,"FOV":"160x35","power":10,"cost":300,"tech":"FMCW/4D" },
+        "全景低分辨率": null,
+        "全景中分辨率": { "deploymentRank":1,"resolution":0.03,"pointDensity":5.5,"FOV":"360x90","power":6,"cost":200,"tech":"Flash" },
+        "全景高分辨率": null
+      }
+    },
+    "midlong": {
+      "2025-2026": {
+        "广角低分辨率": null,
+        "广角中分辨率": { "deploymentRank":3,"resolution":0.12,"pointDensity":1.5,"FOV":"120x30","power":14,"cost":450,"tech":"MEMS" },
+        "广角高分辨率": { "deploymentRank":2,"resolution":0.05,"pointDensity":4.5,"FOV":"120x30","power":18,"cost":550,"tech":"MEMS" },
+        "全景低分辨率": { "deploymentRank":2,"resolution":0.2,"pointDensity":1.0,"FOV":"360x22.5","power":15,"cost":500,"tech":"Flash" },
+        "全景中分辨率": { "deploymentRank":1,"resolution":0.1,"pointDensity":2.0,"FOV":"360x30","power":12,"cost":400,"tech":"混合架构" },
+        "全景高分辨率": null
+      },
+      "2027-2028": {
+        "广角低分辨率": null,
+        "广角中分辨率": { "deploymentRank":2,"resolution":0.08,"pointDensity":2.5,"FOV":"130x35","power":12,"cost":350,"tech":"混合架构" },
+        "广角高分辨率": { "deploymentRank":1,"resolution":0.03,"pointDensity":7.0,"FOV":"130x40","power":15,"cost":450,"tech":"FMCW/4D" },
+        "全景低分辨率": null,
+        "全景中分辨率": { "deploymentRank":3,"resolution":0.08,"pointDensity":3.0,"FOV":"360x40","power":10,"cost":300,"tech":"Flash" },
+        "全景高分辨率": null
+      },
+      "2029-2030": {
+        "广角低分辨率": null,
+        "广角中分辨率": null,
+        "广角高分辨率": { "deploymentRank":1,"resolution":0.02,"pointDensity":8.5,"FOV":"140x45","power":12,"cost":400,"tech":"混合架构" },
+        "全景低分辨率": null,
+        "全景中分辨率": { "deploymentRank":2,"resolution":0.05,"pointDensity":5.5,"FOV":"360x70","power":10,"cost":300,"tech":"混合架构" },
+        "全景高分辨率": { "deploymentRank":3,"resolution":0.02,"pointDensity":10.0,"FOV":"360x70","power":12,"cost":500,"tech":"OPA" }
+      },
+      "2030+": {
+        "广角低分辨率": null,
+        "广角中分辨率": null,
+        "广角高分辨率": { "deploymentRank":1,"resolution":0.01,"pointDensity":12.0,"FOV":"150x50","power":10,"cost":350,"tech":"OPA" },
+        "全景低分辨率": null,
+        "全景中分辨率": { "deploymentRank":2,"resolution":0.03,"pointDensity":8.0,"FOV":"360x80","power":8,"cost":250,"tech":"混合架构" },
+        "全景高分辨率": { "deploymentRank":3,"resolution":0.01,"pointDensity":15.0,"FOV":"360x80","power":10,"cost":400,"tech":"OPA" }
+      }
+    },
+    "long": {
+      "2025-2026": {
+        "广角低分辨率": null,
+        "广角中分辨率": { "deploymentRank":3,"resolution":0.2,"pointDensity":2.0,"FOV":"120x25","power":18,"cost":600,"tech":"转境" },
+        "广角高分辨率": { "deploymentRank":2,"resolution":0.05,"pointDensity":5.0,"FOV":"120x30","power":20,"cost":800,"tech":"混合架构" },
+        "全景低分辨率": null,
+        "全景中分辨率": { "deploymentRank":2,"resolution":0.15,"pointDensity":2.0,"FOV":"360x30","power":15,"cost":500,"tech":"Flash" },
+        "全景高分辨率": { "deploymentRank":1,"resolution":0.03,"pointDensity":6.0,"FOV":"360x50","power":18,"cost":700,"tech":"FMCW/4D" }
+      },
+      "2027-2028": {
+        "广角低分辨率": null,
+        "广角中分辨率": { "deploymentRank":3,"resolution":0.12,"pointDensity":3.5,"FOV":"130x30","power":15,"cost":500,"tech":"转境" },
+        "广角高分辨率": { "deploymentRank":2,"resolution":0.03,"pointDensity":8.0,"FOV":"130x35","power":18,"cost":700,"tech":"混合架构" },
+        "全景低分辨率": null,
+       "全景中分辨率":{"deploymentRank":1,"resolution":0.03,"pointDensity":10.0,"FOV":"360x80","power":8,"cost":300,"tech":"混合架构"},
+       "全景高分辨率":{"deploymentRank":3,"resolution":0.01,"pointDensity":20.0,"FOV":"360x80","power":10,"cost":700,"tech":"OPA"}
+     },
+       "2029-2030":{
+        "广角低分辨率":null,
+        "广角中分辨率":null,
+        "广角高分辨率":{"deploymentRank":1,"resolution":0.02,"pointDensity":12.0,"FOV":"140x35","power":15,"cost":600,"tech":"混合架构"},
+        "全景低分辨率":null,"全景中分辨率":{"deploymentRank":2,"resolution":0.05,"pointDensity":6.0,"FOV":"360x70","power":10,"cost":450,"tech":"混合架构"},
+        "全景高分辨率":{"deploymentRank":3,"resolution":0.015,"pointDensity":15.0,"FOV":"360x70","power":12,"cost":800,"tech":"OPA"}
+    },
+       "2030+":{
+       "广角低分辨率":null,
+       "广角中分辨率":null,
+       "广角高分辨率":{"deploymentRank":2,"resolution":0.01,"pointDensity":15.0,"FOV":"150x40","power":12,"cost":500,"tech":"OPA"},
+       "全景低分辨率":null,
+       "全景中分辨率":{"deploymentRank":1,"resolution":0.03,"pointDensity":10.0,"FOV":"360x80","power":8,"cost":300,"tech":"混合架构"},
+      "全景高分辨率":{"deploymentRank":3,"resolution":0.01,"pointDensity":20.0,"FOV":"360x80","power":10,"cost":700,"tech":"OPA"}
+   }
+ },
+      ultra: {
+      "2025-2026":{
+      "广角低分辨率":null,
+      "广角中分辨率":{"deploymentRank":2,"resolution":0.1,"pointDensity":2.7,"FOV":"120x30","power":20,"cost":800,"tech":"转境"},
+      "广角高分辨率":{"deploymentRank":1,"resolution":0.05,"pointDensity":4.0,"FOV":"120x30","power":25,"cost":1000,"tech":"FMCW/4D"},
+      "全景低分辨率":null,
+      "全景中分辨率":null,
+      "全景高分辨率":{"deploymentRank":1,"resolution":0.03,"pointDensity":6.0,"FOV":"360x50","power":30,"cost":1200,"tech":"FMCW/4D"}
+     },
+     "2027-2028":{
+      "广角低分辨率":null,
+      "广角中分辨率":{"deploymentRank":3,"resolution":0.1,"pointDensity":5.0,"FOV":"120x40","power":18,"cost":700,"tech":"FMCW/4D"},
+      "广角高分辨率":{"deploymentRank":2,"resolution":0.03,"pointDensity":8.0,"FOV":"150x40","power":20,"cost":900,"tech":"混合架构"},
+      "全景低分辨率":null,"全景中分辨率":{"deploymentRank":2,"resolution":0.1,"pointDensity":3.0,"FOV":"360x20","power":15,"cost":600,"tech":"混合架构"},
+      "全景高分辨率":{"deploymentRank":1,"resolution":0.02,"pointDensity":10.0,"FOV":"360x60","power":25,"cost":1200,"tech":"OPA"}
+    },
+     "2029-2030":{
+     "广角低分辨率":null,
+     "广角中分辨率":null,
+     "广角高分辨率":{"deploymentRank":1,"resolution":0.02,"pointDensity":15.0,"FOV":"160x50","power":18,"cost":800,"tech":"混合架构"},
+     "全景低分辨率":null,
+     "全景中分辨率":{"deploymentRank":2,"resolution":0.05,"pointDensity":6.0,"FOV":"360x60","power":12,"cost":500,"tech":"Flash"},
+     "全景高分辨率":{"deploymentRank":3,"resolution":0.01,"pointDensity":12.0,"FOV":"360x80","power":20,"cost":1500,"tech":"OPA"}
+    },"2030+":{
+     "广角低分辨率":null,
+     "广角中分辨率":null,
+     "广角高分辨率":{"deploymentRank":1,"resolution":0.01,"pointDensity":20.0,"FOV":"180x60","power":15,"cost":600,"tech":"OPA"},
+     "全景低分辨率":null,
+     "全景中分辨率":{"deploymentRank":2,"resolution":0.03,"pointDensity":8.0,"FOV":"360x70","power":10,"cost":400,"tech":"混合架构"},
+     "全景高分辨率":{"deploymentRank":3,"resolution":0.01,"pointDensity":20.0,"FOV":"360x80","power":15,"cost":1000,"tech":"OPA"}
+   }
+  }
+ };
+    const yearRanges = Object.keys(data.short);
+    const sequences = ["全部", ...Object.keys(data)];
+    const productTypes = ["广角低分辨率","广角中分辨率","广角高分辨率","全景低分辨率","全景中分辨率","全景高分辨率"];
+    const parameters = ["全部","resolution","pointDensity","power","cost"];
+    const techPaths = ["全部","Flash","MEMS","转镜","FMCW/4D","OPA","混合架构"];
+
+    function populateControls() {
+      function addOptions(el, arr) { el.innerHTML = ''; arr.forEach(v => el.add(new Option(v, v))); }
+      addOptions(document.getElementById('yearRangeSelect'), yearRanges);
+      addOptions(document.getElementById('sequenceSelect'), sequences);
+      addOptions(document.getElementById('parameterSelect'), parameters);
+      addOptions(document.getElementById('techPathSelect'), techPaths);
+      ['compare1','compare2'].forEach(id => addOptions(document.getElementById(id), sequences));
+    }
+
+    function updateChart() {
+      const mode = document.getElementById('modeSelect').value;
+      const year = document.getElementById('yearRangeSelect').value;
+      const seq = document.getElementById('sequenceSelect').value;
+      const param = document.getElementById('parameterSelect').value;
+      const tech = document.getElementById('techPathSelect').value;
+      const c1 = document.getElementById('compare1').value;
+      const c2 = document.getElementById('compare2').value;
+      let traces = [];
+      const seqList = seq === '全部' ? Object.keys(data) : [seq];
+      if (mode === 'deployment') {
+        seqList.forEach(sq => {
+          productTypes.forEach(pt => {
+            const d = data[sq][year]?.[pt];
+            if (d) traces.push({ x:[
+              sq + ' - ' + pt
+            ], y:[d.deploymentRank], marker:{ size:d.deploymentRank*10, color:yearRanges.indexOf(year) }, name:pt, type:'scatter' });
+          });
+        });
+      } else if (mode === 'parameterTrend') {
+        seqList.forEach(sq => {
+          productTypes.forEach(pt => {
+            if (param==='全部') return;
+            traces.push({ x:yearRanges, y:yearRanges.map(y=>data[sq][y][pt]?.[param]||null), name: sq+'-'+pt, mode:'lines+markers', type:'scatter' });
+          });
+        });
+      } else if (mode === 'techDeployment') {
+        seqList.forEach(sq => {
+          productTypes.forEach(pt => {
+            const d = data[sq][year]?.[pt];
+            if (d && (tech==='全部' || d.tech===tech)) traces.push({ x:[sq+' - '+pt], y:[d.deploymentRank], marker:{ symbol:100+techPaths.indexOf(d.tech), size:12, color:yearRanges.indexOf(year) }, name:pt, type:'scatter' });
+          });
+        });
+      } else if (mode === 'sequenceCompare') {
+        [c1,c2].forEach(sq => {
+          if (sq==='全部') return;
+          if (param==='全部') return;
+          traces.push({ x:yearRanges, y:yearRanges.map(y=>data[sq][y]['广角中分辨率']?.[param]||null), name:sq, mode:'lines+markers', type:'scatter' });
+        });
+      }
+      Plotly.newPlot('chart', traces, { margin:{ t:40 }, legend:{ orientation:'h' } });
+    }
+
+    populateControls();
+    document.querySelectorAll('.controls select').forEach(el=>el.addEventListener('change', updateChart));
+    updateChart();
+  </script>
+</body>
+</html>
