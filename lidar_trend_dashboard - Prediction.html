@@ -7,21 +7,21 @@
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-   .controls { margin-bottom: 20px; }
+    .controls { margin-bottom: 20px; }
     .controls select { margin-right: 10px; padding: 5px; }
     #chart { width: 100%; height: 600px; }
   </style>
 </head>
 <body>
   <h2>激光雷达产品趋势图表</h2>
-<div class="description">
-  <p>本图标用于分析激光雷达产品在 <strong>五类探测距离</strong>（短距、中短距、中长距、长距、超长距）与 <strong>六类产品类型</strong>（广角低分辨率、广角中分辨率、广角高分辨率、全景低分辨率、全景中分辨率、全景高分辨率）在 <strong>2025–2030+</strong> 时间区间的演进趋势。</p>
-  <ul>
-    <li>可视化每年每类探测序列的产品类型部署趋势。点大小表示分辨率等级，颜色表示年份（颜色随年份递增）。</li>
-    <li>展示各参数（如尺寸、功耗、FOV等）在不同时间区间与探测序列下的演进趋势折线图。</li>
-    <li>展示不同技术路径在不同探测序列和年份中的部署分布，不同形状表示技术路径。</li>
-    <li>对比任意两类探测序列在各参数上的全局趋势。</li>
-  </ul>
+  <div class="description">
+    <p>本图表用于分析激光雷达产品在 <strong>五类探测距离</strong>（短距、中短距、中长距、长距、超长距）与 <strong>六类产品类型</strong>（广角低分辨率、广角中分辨率、广角高分辨率、全景低分辨率、全景中分辨率、全景高分辨率）在 <strong>2025–2030+</strong> 时间区间的演进趋势。</p>
+    <ul>
+      <li>可视化每年每类探测序列的产品类型部署趋势。点大小表示分辨率等级，颜色表示产品类型。</li>
+      <li>展示各参数（如尺寸、功耗、FOV等）在不同时间区间与探测序列下的演进趋势折线图，线/点颜色表示产品类型。</li>
+      <li>展示不同技术路径在不同探测序列和年份中的部署分布，不同形状表示技术路径，颜色依然按产品类型。</li>
+      <li>对比任意两类探测序列在各参数上的全局趋势，颜色统一为“广角中分辨率”。</li>
+    </ul>
   </div>
 
   <div class="controls">
@@ -46,8 +46,9 @@
     <select id="compare2"></select>
   </div>
   <div id="chart"></div>
+
   <script>
-const data = {
+   const data = {
     "short": {
       "2025-2026": {
         "广角低分辨率": { "deploymentRank":3,"resolution":0.25,"pointDensity":0.5,"FOV":"120x90","power":10,"cost":500,"tech":"Flash" },
@@ -161,7 +162,7 @@ const data = {
       },
       "2027-2028": {
         "广角低分辨率": null,
-        "广角中分辨率": { "deploymentRank":3,"resolution":0.12,"pointDensity":3.5,"FOV":"130x30","power":15,"cost":500,"tech":"转境" },
+        "广角中分辨率": { "deploymentRank":3,"resolution":0.12,"pointDensity":3.5,"FOV":"130x30","power":15,"cost":500,"tech":"转镜" },
         "广角高分辨率": { "deploymentRank":2,"resolution":0.03,"pointDensity":8.0,"FOV":"130x35","power":18,"cost":700,"tech":"混合架构" },
         "全景低分辨率": null,
        "全景中分辨率":{"deploymentRank":1,"resolution":0.03,"pointDensity":10.0,"FOV":"360x80","power":8,"cost":300,"tech":"混合架构"},
@@ -186,7 +187,7 @@ const data = {
       ultra: {
       "2025-2026":{
       "广角低分辨率":null,
-      "广角中分辨率":{"deploymentRank":2,"resolution":0.1,"pointDensity":2.7,"FOV":"120x30","power":20,"cost":800,"tech":"转境"},
+      "广角中分辨率":{"deploymentRank":2,"resolution":0.1,"pointDensity":2.7,"FOV":"120x30","power":20,"cost":800,"tech":"转镜"},
       "广角高分辨率":{"deploymentRank":1,"resolution":0.05,"pointDensity":4.0,"FOV":"120x30","power":25,"cost":1000,"tech":"FMCW/4D"},
       "全景低分辨率":null,
       "全景中分辨率":null,
@@ -196,8 +197,7 @@ const data = {
       "广角低分辨率":null,
       "广角中分辨率":{"deploymentRank":3,"resolution":0.1,"pointDensity":5.0,"FOV":"120x40","power":18,"cost":700,"tech":"FMCW/4D"},
       "广角高分辨率":{"deploymentRank":2,"resolution":0.03,"pointDensity":8.0,"FOV":"150x40","power":20,"cost":900,"tech":"混合架构"},
-      "全景低分辨率":null,
-      "全景中分辨率":{"deploymentRank":2,"resolution":0.1,"pointDensity":3.0,"FOV":"360x20","power":15,"cost":600,"tech":"混合架构"},
+      "全景低分辨率":null,"全景中分辨率":{"deploymentRank":2,"resolution":0.1,"pointDensity":3.0,"FOV":"360x20","power":15,"cost":600,"tech":"混合架构"},
       "全景高分辨率":{"deploymentRank":1,"resolution":0.02,"pointDensity":10.0,"FOV":"360x60","power":25,"cost":1200,"tech":"OPA"}
     },
      "2029-2030":{
@@ -223,6 +223,11 @@ const data = {
     const parameters = ["全部","resolution","pointDensity","power","cost"];
     const techPaths = ["全部","Flash","MEMS","转镜","FMCW/4D","OPA","混合架构"];
 
+    // 1. 为每个产品类型分配固定颜色
+    const palette = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b'];
+    const colorMap = {};
+    productTypes.forEach((pt, i) => { colorMap[pt] = palette[i]; });
+
     function populateControls() {
       function addOptions(el, arr) { el.innerHTML = ''; arr.forEach(v => el.add(new Option(v, v))); }
       addOptions(document.getElementById('yearRangeSelect'), yearRanges);
@@ -240,49 +245,87 @@ const data = {
       const tech = document.getElementById('techPathSelect').value;
       const c1 = document.getElementById('compare1').value;
       const c2 = document.getElementById('compare2').value;
+
       let traces = [];
       const seqList = seq === '全部' ? Object.keys(data) : [seq];
-      if (mode === 'deployment') {if (mode === 'deployment') {
-  // 定义产品类型对应固定颜色，颜色映射可自定义
-  const colorMap = {
-    "广角低分辨率": "#1f77b4",
-    "广角中分辨率": "#ff7f0e",
-    "广角高分辨率": "#2ca02c",
-    "全景低分辨率": "#d62728",
-    "全景中分辨率": "#9467bd",
-    "全景高分辨率": "#8c564b"
-  }; 
-  seqList.forEach(sq => {
-    productTypes.forEach(pt => {
-      const d = data[sq][year]?.[pt];
-      if (d) {
-        traces.push({
-          x: [sq + ' - ' + pt],
-          y: [d.deploymentRank],
-          marker: {
-            size: d.deploymentRank * 10,
-            color: colorMap[pt] || '#777'  // 用固定颜色，不随年份变化
-          },
-          name: pt,
-          type: 'scatter'
+
+      if (mode === 'deployment') {
+        seqList.forEach(sq => {
+          productTypes.forEach(pt => {
+            const d = data[sq][year]?.[pt];
+            if (d) {
+              traces.push({
+                x: [sq + ' - ' + pt],
+                y: [d.deploymentRank],
+                name: pt,
+                type: 'scatter',
+                marker: {
+                  size: d.deploymentRank * 10,
+                  color: colorMap[pt]
+                }
+              });
+            }
+          });
         });
-      }
-    });
-  });
-}
+
+      } else if (mode === 'parameterTrend') {
+        seqList.forEach(sq => {
+          productTypes.forEach(pt => {
+            if (param === '全部') return;
+            const values = yearRanges.map(y => data[sq][y][pt]?.[param] || null);
+            traces.push({
+              x: yearRanges,
+              y: values,
+              name: sq + ' - ' + pt,
+              mode: 'lines+markers',
+              type: 'scatter',
+              line: { color: colorMap[pt] },
+              marker: { color: colorMap[pt] }
+            });
+          });
+        });
+
+      } else if (mode === 'techDeployment') {
+        seqList.forEach(sq => {
+          productTypes.forEach(pt => {
+            const d = data[sq][year]?.[pt];
+            if (d && (tech === '全部' || d.tech === tech)) {
+              traces.push({
+                x: [sq + ' - ' + pt],
+                y: [d.deploymentRank],
+                name: pt,
+                type: 'scatter',
+                marker: {
+                  symbol: 100 + techPaths.indexOf(d.tech),
+                  size: 12,
+                  color: colorMap[pt]
+                }
+              });
+            }
+          });
+        });
 
       } else if (mode === 'sequenceCompare') {
-        [c1,c2].forEach(sq => {
-          if (sq==='全部') return;
-          if (param==='全部') return;
-          traces.push({ x:yearRanges, y:yearRanges.map(y=>data[sq][y]['广角中分辨率']?.[param]||null), name:sq, mode:'lines+markers', type:'scatter' });
+        [c1, c2].forEach(sq => {
+          if (sq === '全部' || param === '全部') return;
+          const values = yearRanges.map(y => data[sq][y]['广角中分辨率']?.[param] || null);
+          traces.push({
+            x: yearRanges,
+            y: values,
+            name: sq,
+            mode: 'lines+markers',
+            type: 'scatter',
+            line: { color: colorMap['广角中分辨率'] },
+            marker: { color: colorMap['广角中分辨率'] }
+          });
         });
       }
-      Plotly.newPlot('chart', traces, { margin:{ t:40 }, legend:{ orientation:'h' } });
+
+      Plotly.newPlot('chart', traces, { margin: { t: 40 }, legend: { orientation: 'h' } });
     }
 
     populateControls();
-    document.querySelectorAll('.controls select').forEach(el=>el.addEventListener('change', updateChart));
+    document.querySelectorAll('.controls select').forEach(el => el.addEventListener('change', updateChart));
     updateChart();
   </script>
 </body>
