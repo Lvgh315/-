@@ -8,135 +8,146 @@
     body { font-family: Arial, sans-serif; margin: 20px; }
     #filters { margin-bottom: 20px; }
     select { margin-right: 10px; padding: 5px; }
-    #legend {
-      margin-top: 20px;
-      padding: 10px;
-      background-color: #f9f9f9;
-      border: 1px solid #ddd;
-      max-width: 600px;
-    }
-    #legend h3 {
-      margin-top: 0;
-    }
-    #legend ul {
-      padding-left: 20px;
-    }
+    #legend { margin-top: 20px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; max-width: 600px; }
+    #legend h3 { margin-top: 0; }
+    #legend ul { padding-left: 20px; }
   </style>
 </head>
 <body>
-  <h2>LiDAR 产品分布图</h2>
+  <h2>LiDAR 产品分布图（交互）</h2>
   <div id="filters">
-    <label>厂商:</label>
-    <select id="manufacturer"></select>
-    <label>量产年份:</label>
-    <select id="year"></select>
-    <label>技术路线:</label>
-    <select id="tech"></select>
-    <label>距离类型:</label>
-    <select id="range"></select>
+    <label>厂商:</label><select id="manufacturer"></select>
+    <label>量产年份:</label><select id="year"></select>
+    <label>技术路线:</label><select id="tech"></select>
+    <label>距离类型:</label><select id="range"></select>
+    <label>成本:</label><select id="cost"></select>
+    <label>年出货量:</label><select id="volume"></select>
   </div>
   <div id="chart" style="width:100%;height:800px;"></div>
-
   <div id="legend">
     <h3>图表说明</h3>
     <ul>
-      <li><strong>横轴 (X)</strong>：FOV（视场角）</li>
-      <li><strong>纵轴 (Y)</strong>：点密度（单位：百万点/秒）</li>
-      <li><strong>点大小</strong>：对应功耗（单位：W）</li>
-      <li><strong>点颜色</strong>：表示量产年份（颜色越深表示年份越近）</li>
-      <li><strong>悬浮提示</strong>：显示厂商、型号、功耗、应用场景等信息</li>
+      <li><strong>横轴 (X)</strong>：FOV-H (°)</li>
+      <li><strong>纵轴 (Y)</strong>：分辨率 (百万点/秒)</li>
+      <li><strong>点大小</strong>：功耗 (W)</li>
+      <li><strong>点颜色</strong>：量产年份（颜色越深表示年份越近）</li>
+      <li><strong>悬浮提示</strong>：厂商、型号、功耗、应用场景</li>
     </ul>
   </div>
   <script>
-    const rawData = [
-  {厂商:'禾赛 Hesai', 型号:'AT128P', 技术路线:'MEMS ToF 半固态', 距离类型:'长距', FOV:'120×25.4°', 分辨率:1.53, 功耗:15, 应用:'理想L9、极氪001', 状态:'已量产', 年份:2022},
-  {厂商:'禾赛 Hesai', 型号:'ATX', 技术路线:'MEMS ToF 半固态', 距离类型:'长距', FOV:'120×20°', 分辨率:1.2, 功耗:10, 应用:'比亚迪 DiPilot 300 2025 款车型', 状态:'即将量产', 年份:2025},
-  {厂商:'禾赛 Hesai', 型号:'QT128', 技术路线:'Flash 全固态', 距离类型:'短距', FOV:'360×105°', 分辨率:1.15, 功耗:20, 应用:'Robotaxi 全车环视', 状态:'已量产', 年份:2023},
-  {厂商:'速腾 RoboSense', 型号:'M1 Plus', 技术路线:'MEMS ToF 半固态', 距离类型:'长距', FOV:'120×25°', 分辨率:0.8, 功耗:15, 应用:'小鹏 G6，海报系列，广汽 AION V', 状态:'已量产', 年份:2022},
-  {厂商:'速腾 RoboSense', 型号:'MX', 技术路线:'MEMS ToF 半固态', 距离类型:'长距', FOV:'120×25°', 分辨率:1.0, 功耗:10, 应用:'广汽 AION V，Toyota bZ3X，广汽传祺 S7，吉利银河 E8', 状态:'即将量产', 年份:2025},
-  {厂商:'速腾 RoboSense', 型号:'E1 / E1R', 技术路线:'Flash 全固态', 距离类型:'短距', FOV:'120×90°', 分辨率:0.26, 功耗:10, 应用:'滴滴ROBOTAXI，Pony Robotaxi，仰望U8', 状态:'已量产', 年份:2023},
-  {厂商:'华为 Huawei', 型号:'D2（96线）', 技术路线:'转镜 ToF 半固态', 距离类型:'中长', FOV:'120×25°', 分辨率:1.5, 功耗:15, 应用:'问界 M7、阿维塔11，问界M5，哪吒S', 状态:'已量产', 年份:2023},
-  {厂商:'华为 Huawei', 型号:'D3P (192线)', 技术路线:'转镜 ToF 半固态', 距离类型:'长距', FOV:'120×20°', 分辨率:1.0, 功耗:20, 应用:'问界 M7/M9、智界 S7/R7、享界 S9、岚图梦想家', 状态:'已量产', 年份:2024},
-  {厂商:'华为 Huawei', 型号:'D5 (>192线)', 技术路线:'转镜 ToF 半固态', 距离类型:'长距', FOV:'—', 分辨率:null, 功耗:null, 应用:'L3 量产车型目标', 状态:'小批量量产', 年份:2026},
-  {厂商:'图达通 Innovusion', 型号:'Falcon', 技术路线:'转镜 ToF 半固态', 距离类型:'长距', FOV:'120×25°', 分辨率:0.9, 功耗:18, 应用:'蔚来ES系列，ET系列，乐道等', 状态:'已量产', 年份:2022},
-  {厂商:'图达通 Innovusion', 型号:'Robin', 技术路线:'MEMS ToF 半固态', 距离类型:'中短', FOV:'120×25°', 分辨率:1.28, 功耗:6, 应用:'蔚来ES系列，ET系列，乐道等', 状态:'小批量量产', 年份:2025},
-  {厂商:'Luminar', 型号:'Iris', 技术路线:'转镜 ToF 半固态', 距离类型:'超长', FOV:'120×30°', 分辨率:0.9, 功耗:20, 应用:'沃尔沃 EX90、XC90，极星3，奔驰', 状态:'已量产', 年份:2023},
-  {厂商:'Luminar', 型号:'Iris+', 技术路线:'转镜 ToF 半固态', 距离类型:'长距', FOV:'120×28°', 分辨率:2.7, 功耗:20, 应用:'奔驰，沃尔沃', 状态:'待量产', 年份:2025},
-  {厂商:'Luminar', 型号:'Halo', 技术路线:'OPA + FMCW 全固态', 距离类型:'超长', FOV:'125×26°', 分辨率:4.0, 功耗:10, 应用:'大众化，奔驰，奥迪乘用车', 状态:'开发中', 年份:2026},
-  {厂商:'Innoviz', 型号:'InnovizOne', 技术路线:'MEMS ToF 半固态', 距离类型:'中长', FOV:'120×30°', 分辨率:0.6, 功耗:10, 应用:'宝马 iX / i7', 状态:'已量产', 年份:2022},
-  {厂商:'Innoviz', 型号:'InnovizTwo', 技术路线:'MEMS ToF 半固态', 距离类型:'中长', FOV:'>120°', 分辨率:1.5, 功耗:10, 应用:'—', 状态:'规划中', 年份:2026},
-  {厂商:'Aeva', 型号:'Aeries II', 技术路线:'FMCW  + MEMS 半固态', 距离类型:'超长', FOV:'120×30°', 分辨率:4.0, 功耗:15, 应用:'L3/L4 自动驾驶测试', 状态:'小批量量产', 年份:2025},
-  {厂商:'Aeva', 型号:'Atlas Ultra', 技术路线:'FMCW  + MEMS 半固态', 距离类型:'超长', FOV:'150°', 分辨率:12.0, 功耗:15, 应用:'CES 2025 展示、2025 年末预量产', 状态:'样机中', 年份:2027},
-  {厂商:'Aurora', 型号:'FirstLight', 技术路线:'FMCW  + MEMS 半固态', 距离类型:'超长', FOV:'120°', 分辨率:2.4, 功耗:25, 应用:'Aurora Driver（商用卡车测试）', 状态:'商业化测试中', 年份:2025},
-  {厂商:'一径科技 HiRain', 型号:'ML-30s', 技术路线:'MEMS ToF 半固态', 距离类型:'短距', FOV:'140×70°', 分辨率:0.7, 功耗:14, 应用:'京东智能快递车、嬴彻科技商用卡车，RT6，元戎', 状态:'商业化测试中', 年份:2024},
-  {厂商:'一径科技 HiRain', 型号:'ML-Xs', 技术路线:'MEMS ToF 半固态', 距离类型:'长距', FOV:'120×25°', 分辨率:2.88, 功耗:30, 应用:'广汽Robotaxi', 状态:'商业化测试中', 年份:2024},
-  {厂商:'北醒 Bleeye', 型号:'AD2-S-X3', 技术路线:'MEMS ToF 半固态', 距离类型:'长距', FOV:'120×25°', 分辨率:0.8, 功耗:12, 应用:'未知', 状态:'已量产', 年份:2024},
-  {厂商:'Ouster', 型号:'OS1', 技术路线:'Flash 全固态', 距离类型:'中短', FOV:'360×42.4°', 分辨率:5.2, 功耗:20, 应用:'iDriverplus 无人清洁机器人，Flyability 探矿无人机', 状态:'已量产', 年份:2019},
-  {厂商:'Ouster', 型号:'OS2', 技术路线:'Flash 全固态', 距离类型:'中长', FOV:'360×22.5°', 分辨率:2.62, 功耗:20, 应用:'Ike 自动驾驶卡车，沃尔沃卡车自动驾驶系统', 状态:'已量产', 年份:2020},
-  {厂商:'Semilux', 型号:'OPA-SS1', 技术路线:'OPA 全固态', 距离类型:'中长', FOV:'120°', 分辨率:2.5, 功耗:5, 应用:'2025 完成车规静态验证', 状态:'开发中', 年份:2025},
-  {厂商:'Lidwave', 型号:'OPA-FMCW Demo', 技术路线:'OPA + FMCW 全固态', 距离类型:'长距', FOV:'>120°', 分辨率:2.0, 功耗:10, 应用:'CES 2025 展示，工业 / ADAS 定位', 状态:'样机期', 年份:2025},
-  {厂商:'LightIC', 型号:'IC-OPA-FMCW', 技术路线:'OPA + FMCW 全固态', 距离类型:'长距', FOV:'≈120°', 分辨率:3.0, 功耗:8, 应用:'CES 2025 展示，推向车规可集成目标', 状态:'演示阶段', 年份:2025},
-  {厂商: 'Valeo', 型号: 'SCALA Gen3', 技术路线: '转镜 ToF 半固态', 距离类型: '长距', FOV: '120 × 26°', 分辨率: 12.5, 功耗: 15 , 应用: 'L3–L4 Europa OEM', 状态: '已量产', 年份: 2024},
-  {厂商: '雷神 (LS LiDAR)', 型号: 'CH64W', 技术路线: '转镜 ToF 半固态', 距离类型: '中长', FOV: '180 × 40°', 分辨率: 0.3, 功耗: 12, 应用: '盲区消除、L2–L3 ADAS', 状态: '已量产', 年份: 2023},
-  {厂商: 'Livox', 型号: 'Mid-360', 技术路线: 'MEMS ToF 半固态', 距离类型: '中长', FOV: '360 × 59°', 分辨率: 0.1, 功耗: null, 应用: '自动驾驶环视', 状态: '已量产', 年份: 2023},
-  {厂商: 'Mobileye', 型号: 'Lidar-on-chip (FMCW)', 技术路线: 'OPA + FMCW 全固态', 距离类型: '长距', FOV: '70°', 分辨率: 2, 功耗: null, 应用: 'OEM 高阶 ADAS', 状态: '原型阶段', 年份: 2025},
-  {厂商: 'MicroVision', 型号: 'MAVIN‑N', 技术路线: 'MEMS ToF 半固态', 距离类型: '中短', FOV: '120 × 30°', 分辨率: 14, 功耗: 20, 应用: 'ADAS、叉车、物流机器人', 状态: '样品验收', 年份: 2024},
-];
-
-    function populateSelect(id, values) {
+    // 请确保此处 rawData 为包含完整 JSON 数据的数组
+    const rawData =[
+  {厂商:"禾赛 Hesai", 型号:"AT128P", 技术路线:"MEMS ToF 半固态", 距离类型:"长距", FOV:"120×25.4°", 分辨率:1.53, 功耗:15, 应用:"理想L9、极氪001", 成本:"< 500", 年出货量:"≥ 100 000", 状态:"已量产", 年份:2022},
+  {厂商:"禾赛 Hesai", 型号:"ATX", 技术路线:"MEMS ToF 半固态", 距离类型:"长距", FOV:"120×20°", 分辨率:1.2, 功耗:10, 应用:"比亚迪 DiPilot 300 2025 款车型", 成本:"< 500", 年出货量:"≥ 100 000", 状态:"即将量产", 年份:2025},
+  {厂商:"禾赛 Hesai", 型号:"QT128", 技术路线:"Flash 全固态", 距离类型:"短距", FOV:"360×105°", 分辨率:1.15, 功耗:20, 应用:"Robotaxi 全车环视", 成本:"< 500", 年出货量:"30 000~ 99 999", 状态:"已量产", 年份:2023},
+  {厂商:"速腾 RoboSense", 型号:"M1 Plus", 技术路线:"MEMS ToF 半固态", 距离类型:"长距", FOV:"120×25°", 分辨率:0.8, 功耗:15, 应用:"小鹏 G6，海报系列，广汽 AION V", 成本:"2 000~ 2 999", 年出货量:"1 000~ 9 999", 状态:"已量产", 年份:2022},
+  {厂商:"速腾 RoboSense", 型号:"MX", 技术路线:"MEMS ToF 半固态", 距离类型:"长距", FOV:"120×25°", 分辨率:1.0, 功耗:10, 应用:"广汽 AION V，Toyota bZ3X，广汽传祺 S7，吉利银河 E8", 成本:"< 500", 年出货量:"30 000~ 99 999", 状态:"即将量产", 年份:2025},
+  {厂商:"速腾 RoboSense", 型号:"E1 / E1R", 技术路线:"Flash 全固态", 距离类型:"短距", FOV:"120×90°", 分辨率:0.26, 功耗:10, 应用:"滴滴ROBOTAXI，Pony Robotaxi，仰望U8", 成本:"1 000~ 1 999", 年出货量:"10 000~ 29 999", 状态:"已量产", 年份:2023},
+  {厂商:"华为 Huawei", 型号:"D2（96线）", 技术路线:"转镜 ToF 半固态", 距离类型:"中长", FOV:"120×25°", 分辨率:1.5, 功耗:15, 应用:"问界 M7、阿维塔11，问界M5，哪吒S", 成本:"< 500", 年出货量:"30 000~ 99 999", 状态:"已量产", 年份:2023},
+  {厂商:"华为 Huawei", 型号:"D3P (192线)", 技术路线:"转镜 ToF 半固态", 距离类型:"长距", FOV:"120×20°", 分辨率:1.0, 功耗:20, 应用:"问界 M7/M9、智界 S7/R7、享界 S9、岚图梦想家", 成本:"500~ 999", 年出货量:"≥ 100 000", 状态:"已量产", 年份:2024},
+  {厂商:"华为 Huawei", 型号:"D5 (>192线)", 技术路线:"转镜 ToF 半固态", 距离类型:"长距", FOV:"—", 分辨率:null, 功耗:null, 应用:"L3 量产车型目标", 成本:"500~ 999", 年出货量:"10 000~ 29 999", 状态:"小批量量产", 年份:2026},
+  {厂商:"图达通 Innovusion", 型号:"Falcon", 技术路线:"转镜 ToF 半固态", 距离类型:"长距", FOV:"120×25°", 分辨率:0.9, 功耗:18, 应用:"蔚来ES系列，ET系列，乐道等",成本:"2 000~ 2 999", 年出货量:"10 000~ 29 999", 状态:"已量产", 年份:2022},
+  {厂商:"图达通 Innovusion", 型号:"Robin", 技术路线:"MEMS ToF 半固态", 距离类型:"中短", FOV:"120×25°", 分辨率:1.28, 功耗:6, 应用:"蔚来ES系列，ET系列，乐道等", 成本:"< 500", 年出货量:"1 000~ 9 999", 状态:"小批量量产", 年份:2025},
+  {厂商:"Luminar", 型号:"Iris", 技术路线:"转镜 ToF 半固态", 距离类型:"超长", FOV:"120×30°", 分辨率:0.9, 功耗:20, 应用:"沃尔沃 EX90、XC90，极星3，奔驰", 成本:"≥ 3 000", 年出货量:"1 000~ 9 999", 状态:"已量产", 年份:2023},
+  {厂商:"Luminar", 型号:"Iris+", 技术路线:"转镜 ToF 半固态", 距离类型:"长距", FOV:"120×28°", 分辨率:2.7, 功耗:20, 应用:"奔驰，沃尔沃", 成本:"≥ 3 000", 年出货量:"1 000~ 9 999", 状态:"待量产", 年份:2025},
+  {厂商:"Luminar", 型号:"Halo", 技术路线:"OPA + FMCW 全固态", 距离类型:"超长", FOV:"125×26°", 分辨率:4.0, 功耗:10, 应用:"大众化，奔驰，奥迪乘用车",成本:"2 000~ 2 999", 年出货量:"1 000~ 9 999", 状态:"开发中", 年份:2026},
+  {厂商:"Innoviz", 型号:"InnovizOne", 技术路线:"MEMS ToF 半固态", 距离类型:"中长", FOV:"120×30°", 分辨率:0.6, 功耗:10, 应用:"宝马 iX / i7", 成本:"1 000~ 1 999", 年出货量:"1 000~ 9 999", 状态:"已量产", 年份:2022},
+  {厂商:"Innoviz", 型号:"InnovizTwo", 技术路线:"MEMS ToF 半固态", 距离类型:"中长", FOV:">120°", 分辨率:1.5, 功耗:10, 应用:"—", 成本:"1 000~ 1 999", 年出货量:"< 1 000", 状态:"规划中", 年份:2026},
+  {厂商:"Aeva", 型号:"Aeries II", 技术路线:"FMCW + MEMS 半固态", 距离类型:"超长", FOV:"120×30°", 分辨率:4.0, 功耗:15, 应用:"L3/L4 自动驾驶测试", 成本:"≥ 3 000", 年出货量:"< 1 000", 状态:"小批量量产", 年份:2025},
+  {厂商:"Aeva", 型号:"Atlas Ultra", 技术路线:"FMCW + MEMS 半固态", 距离类型:"超长", FOV:"150°", 分辨率:12.0, 功耗:15, 应用:"CES 2025 展示、2025 年末预量产", 成本:"≥ 3 000", 年出货量:"< 1 000", 状态:"样机中", 年份:2027},
+  {厂商:"Aurora", 型号:"FirstLight", 技术路线:"FMCW + MEMS 半固态", 距离类型:"超长", FOV:"120°", 分辨率:2.4, 功耗:25, 应用:"Aurora Driver（商用卡车测试）", 成本:"2 000~ 2 999", 年出货量:"< 1 000", 状态:"商业化测试中", 年份:2025},
+  {厂商:"一径科技 HiRain", 型号:"ML-30s", 技术路线:"MEMS ToF 半固态", 距离类型:"短距", FOV:"140×70°", 分辨率:0.7, 功耗:14, 应用:"京东智能快递车、嬴彻科技商用卡车，RT6，元戎", 成本:"500~ 999", 年出货量:"1 000~ 9 999", 状态:"商业化测试中", 年份:2024},
+  {厂商:"一径科技 HiRain", 型号:"ML-Xs", 技术路线:"MEMS ToF 半固态", 距离类型:"长距", FOV:"120×25°", 分辨率:2.88, 功耗:30, 应用:"广汽Robotaxi", 成本:"500~ 999", 年出货量:"1 000~ 9 999", 状态:"商业化测试中", 年份:2024},
+  {厂商:"北醒 Bleeye", 型号:"AD2-S-X3", 技术路线:"MEMS ToF 半固态", 距离类型:"长距", FOV:"120×25°", 分辨率:0.8, 功耗:12, 应用:"未知", 成本:"500~ 999", 年出货量:"1 000~ 9 999", 状态:"已量产", 年份:2024},
+  {厂商:"Ouster", 型号:"OS1", 技术路线:"Flash 全固态", 距离类型:"中短", FOV:"360×42.4°", 分辨率:5.2, 功耗:20, 应用:"iDriverplus 无人清洁机器人，Flyability 探矿无人机", 成本:"2 000~ 2 999", 年出货量:"1 000~ 9 999", 状态:"已量产", 年份:2019},
+  {厂商:"Ouster", 型号:"OS2", 技术路线:"Flash 全固态", 距离类型:"中长", FOV:"360×22.5°", 分辨率:2.62, 功耗:20, 应用:"Ike 自动驾驶卡车，沃尔沃卡车自动驾驶系统", 成本:"≥ 3 000", 年出货量:"1 000~ 9 999", 状态:"已量产", 年份:2020},
+  {厂商:"Semilux", 型号:"OPA-SS1", 技术路线:"OPA 全固态", 距离类型:"中长", FOV:"120°", 分辨率:2.5, 功耗:5, 应用:"2025 完成车规静态验证", 成本:"1 000~ 1 999", 年出货量:"< 1 000", 状态:"开发中", 年份:2025},
+  {厂商:"Lidwave", 型号:"OPA-FMCW Demo", 技术路线:"OPA + FMCW 全固态", 距离类型:"长距", FOV:">120°", 分辨率:2.0, 功耗:10, 应用:"CES 2025 展示，工业 / ADAS 定位", 成本:"2 000~ 2 999", 年出货量:"< 1 000", 状态:"样机期", 年份:2025},
+  {厂商:"LightIC", 型号:"IC-OPA-FMCW", 技术路线:"OPA + FMCW 全固态", 距离类型:"长距", FOV:"≈120°", 分辨率:3.0, 功耗:8, 应用:"CES 2025 展示，推向车规可集成目标", 成本:"2 000~ 2 999", 年出货量:"< 1 000", 状态:"演示阶段", 年份:2025},
+  {厂商:"Valeo", 型号:"SCALA Gen3", 技术路线:"转镜 ToF 半固态", 距离类型:"长距", FOV:"120×26°", 分辨率:12.5, 功耗:15, 应用:"L3–L4 Europa OEM", 成本:"1 000~ 1 999", 年出货量:"10 000~ 29 999", 状态:"已量产", 年份:2024},
+  {厂商:"雷神 (LS LiDAR)", 型号:"CH64W", 技术路线:"转镜 ToF 半固态", 距离类型:"中长", FOV:"180×40°", 分辨率:0.3, 功耗:12, 应用:"盲区消除、L2–L3 ADAS", 成本:"2 000~ 2 999", 年出货量:"1 000~ 9 999", 状态:"已量产", 年份:2023},
+  {厂商:"Livox", 型号:"Mid-360", 技术路线:"MEMS ToF 半固态", 距离类型:"中长", FOV:"360×59°", 分辨率:0.1, 功耗:null, 应用:"自动驾驶环视", 成本:"500~ 999", 年出货量:"10 000~ 29 999", 状态:"已量产", 年份:2023},
+  {厂商:"Mobileye", 型号:"Lidar-on-chip (FMCW)", 技术路线:"OPA + FMCW 全固态", 距离类型:"长距", FOV:"70°", 分辨率:2, 功耗:null, 应用:"OEM 高阶 ADAS", 成本:"500~ 999", 年出货量:"< 1 000", 状态:"原型阶段", 年份:2025},
+  {厂商:"MicroVision", 型号:"MAVIN‑N", 技术路线:"MEMS ToF 半固态", 距离类型:"中短", FOV:"120×30°", 分辨率:14, 功耗:20, 应用:"ADAS、叉车、物流机器人", 成本:"500~ 999", 年出货量:"< 1 000", 状态:"样品验收", 年份:2024}
+   ]
+function populateSelect(id, options) {
       const sel = document.getElementById(id);
-      sel.innerHTML = '<option value="all">全部</option>';
-      values.forEach(v => sel.innerHTML += `<option value="${v}">${v}</option>`);
+      sel.innerHTML = '<option value="all">All</option>';
+      options.forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt;
+        o.text  = opt;
+        sel.add(o);
+      });
     }
 
-    populateSelect('manufacturer', [...new Set(rawData.map(d => d.厂商))]);
-    populateSelect('year', [...new Set(rawData.map(d => d.年份))].sort((a,b)=>a-b));
-    populateSelect('tech', [...new Set(rawData.map(d => d.技术路线))]);
-    populateSelect('range', [...new Set(rawData.map(d => d.距离类型))]);
+    // 规范化数据
+   rawData.forEach(d => {
+    d.year = +String(d.年份).match(/\d{4}/)[0] || null;
+    const nums = (String(d.FOV).match(/\d+\.?\d*/g) || []).map(Number);
+    d.fov = nums.length ? Math.max(...nums) : 0;
+    d.res = parseFloat(d.分辨率) || 0;
+    d.pwr = parseFloat(d.功耗) || 0;
+    const costField = d.成本;
+    d.cost = parseFloat(costField.replace(/[^0-9\.]/g, '')) || null;
+    const volText = d['年出货量'] || '';
+    d.volumeText = volText;
+    let numeric = volText.replace(/,/g, '');
+    if (/万/.test(numeric)) numeric = parseFloat(numeric) * 10000;
+    else if (/千/.test(numeric)) numeric = parseFloat(numeric) * 1000;
+    d.volume = parseFloat(numeric) || 0;
+  });
+
+  populateSelect('manufacturer', [...new Set(rawData.map(d => d.厂商))]);
+  populateSelect('year',         [...new Set(rawData.map(d => d.year).filter(Boolean))].sort());
+  populateSelect('tech',         [...new Set(rawData.map(d => d.技术路线))]);
+  populateSelect('range',        [...new Set(rawData.map(d => d.距离类型))]);
+  populateSelect('cost',         [...new Set(rawData.map(d => d.成本).filter(Boolean))]);
+  populateSelect('volume',       [...new Set(rawData.map(d => d['年出货量']))]);
 
     function filterData() {
-      const mf = document.getElementById('manufacturer').value;
-      const yr = document.getElementById('year').value;
-      const tr = document.getElementById('tech').value;
-      const rt = document.getElementById('range').value;
+      const v = id => document.getElementById(id).value;
       return rawData.filter(d =>
-        (mf === 'all' || d.厂商 === mf) &&
-        (yr === 'all' || d.年份 == yr) &&
-        (tr === 'all' || d.技术路线 === tr) &&
-        (rt === 'all' || d.距离类型 === rt)
+         (v('manufacturer') === 'all' || d.厂商 === v('manufacturer')) &&
+        (v('year') === 'all'         || String(d.year) === v('year')) &&
+        (v('tech') === 'all'         || d.技术路线 === v('tech')) &&
+        (v('range') === 'all'        || d.距离类型 === v('range')) &&
+        (v('cost') === 'all'         || (d.成本) === v('cost')) &&
+        (v('volume') === 'all'       || d.volumeText === v('volume'))
       );
     }
 
     function plot(data) {
       const trace = {
         x: data.map(d => d.FOV),
-        y: data.map(d => d.分辨率 || 0),
-        text: data.map(d => `${d.厂商} ${d.型号}<br>功耗: ${d.功耗 || '—'}W<br>应用: ${d.应用}`),
+        y: data.map(d => d.res || 0),
+        text: data.map(d => `${d.厂商} ${d.型号}\n功耗: ${d.pwr}W\n应用: ${d.应用}`),
         mode: 'markers',
-        type: 'scatter',
         marker: {
-          size: data.map(d => (d.功耗 || 5) * 1.5),
-          color: data.map(d => d.年份),
+          size: data.map(d => d.pwr),
+          color: data.map(d => d.year),
           colorscale: 'Viridis',
           showscale: true,
           colorbar: { title: '量产年份' }
-        },
-        hoverinfo: 'text'
+        }
       };
       const layout = {
-        title: 'LiDAR 产品分布图：FOV vs 点密度（大小=功耗，颜色=年份）',
-        xaxis: { title: 'FOV (°)' },
-        yaxis: { title: '点密度 (M点/秒)' },
+        title: 'LiDAR 产品分布：FOV-H vs 分辨率 (大小=功耗, 颜色=年份)',
+        xaxis: { title: 'FOV-H (°)' },
+        yaxis: { title: '分辨率 (百万点/秒)' },
         hovermode: 'closest'
       };
-      Plotly.newPlot('chart', [trace], layout);
+      Plotly.newPlot('chart', [trace], layout, { responsive: true });
     }
 
-    ['manufacturer', 'year', 'tech', 'range'].forEach(id => {
-      document.getElementById(id).addEventListener('change', () => plot(filterData()));
-    });
+    ['manufacturer','year','tech','range','cost','volume'].forEach(id =>
+      document.getElementById(id).addEventListener('change', () => plot(filterData()))
+    );
 
+    // 初始渲染
     plot(rawData);
   </script>
 </body>
 </html>
+
+
